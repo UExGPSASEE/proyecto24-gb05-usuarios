@@ -1,0 +1,307 @@
+openapi: 3.0.0
+info:
+  description: "Microservicio para la gestión de usuarios, multicuentas y métodos\
+    \ de pago en Cineverse"
+  title: Cineverse Usuarios API
+  version: 1.1.0
+servers:
+- url: http://localhost:8080/api
+paths:
+  /usuarios:
+    delete:
+      description: Elimina la cuenta del usuario principal y todos sus perfiles asociados.
+      operationId: eliminar_usuario
+      responses:
+        "200":
+          description: Usuario eliminado correctamente
+        "404":
+          description: Usuario no encontrado
+      summary: Eliminar usuario principal
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+    post:
+      description: Permite registrar un nuevo usuario principal en la plataforma Cineverse.
+        Este usuario puede crear perfiles adicionales (multicuentas) y gestionar métodos
+        de pago.
+      operationId: registrar_usuario
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioRegistro'
+        required: true
+      responses:
+        "201":
+          description: Usuario registrado exitosamente
+        "400":
+          description: Datos inválidos
+      summary: Registro de nuevo usuario
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+    put:
+      description: "Modifica los datos personales del usuario principal, como correo\
+        \ electrónico, avatar o contraseña."
+      operationId: modificar_usuario
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Usuario'
+        required: true
+      responses:
+        "200":
+          description: Usuario actualizado correctamente
+        "404":
+          description: Usuario no encontrado
+      summary: Modificación de datos del usuario principal
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /usuarios/login:
+    post:
+      description: Autentica a un usuario usando su correo electrónico y contraseña.
+      operationId: login_usuario
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      responses:
+        "200":
+          description: Autenticación exitosa
+        "401":
+          description: Credenciales incorrectas
+      summary: Autenticación de usuario
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /usuarios/{id}:
+    get:
+      description: "Obtiene la información del usuario principal, incluyendo su lista\
+        \ de perfiles de multicuentas."
+      operationId: usuarios_id_get
+      parameters:
+      - description: ID del usuario
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+          description: Datos del usuario obtenidos exitosamente
+        "404":
+          description: Usuario no encontrado
+      summary: Obtener datos del usuario principal
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /usuarios/{id}/metodos-pago:
+    post:
+      description: Permite añadir un nuevo método de pago a la cuenta del usuario.
+      operationId: agregar_metodo_pago
+      parameters:
+      - description: ID del usuario
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetodoPago'
+        required: true
+      responses:
+        "201":
+          description: Método de pago añadido correctamente
+        "400":
+          description: Datos inválidos
+      summary: Añadir método de pago
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+  /usuarios/{id}/perfiles:
+    delete:
+      description: Elimina uno de los perfiles asociados a la cuenta principal del
+        usuario.
+      operationId: eliminar_perfil
+      parameters:
+      - description: ID del usuario
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          description: Perfil eliminado correctamente
+        "404":
+          description: Perfil no encontrado
+      summary: Eliminar perfil
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+    post:
+      description: Permite al usuario principal crear múltiples perfiles bajo la misma
+        cuenta para diferentes personas.
+      operationId: crear_perfil
+      parameters:
+      - description: ID del usuario
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerfilUsuario'
+        required: true
+      responses:
+        "201":
+          description: Perfil creado exitosamente
+        "400":
+          description: Datos inválidos
+      summary: Crear un nuevo perfil de usuario (multicuentas)
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+    put:
+      description: Cambia entre perfiles de usuario disponibles bajo la cuenta principal.
+      operationId: cambiar_perfil
+      parameters:
+      - description: ID del usuario
+        explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerfilUsuario'
+        required: true
+      responses:
+        "200":
+          description: Cambio de perfil exitoso
+        "404":
+          description: Perfil no encontrado
+      summary: Cambiar de perfil
+      x-openapi-router-controller: openapi_server.controllers.default_controller
+components:
+  schemas:
+    UsuarioRegistro:
+      example:
+        nombreUsuario: nombreUsuario
+        correoElectronico: correoElectronico
+        contraseña: contraseña
+      properties:
+        nombreUsuario:
+          title: nombreUsuario
+          type: string
+        correoElectronico:
+          title: correoElectronico
+          type: string
+        contraseña:
+          title: contraseña
+          type: string
+      title: UsuarioRegistro
+      type: object
+    Usuario:
+      example:
+        perfiles:
+        - avatarPerfil: avatarPerfil
+          id: 6
+          nombrePerfil: nombrePerfil
+        - avatarPerfil: avatarPerfil
+          id: 6
+          nombrePerfil: nombrePerfil
+        id: 0
+        nombreUsuario: nombreUsuario
+        avatar: avatar
+        correoElectronico: correoElectronico
+      properties:
+        id:
+          title: id
+          type: integer
+        nombreUsuario:
+          title: nombreUsuario
+          type: string
+        correoElectronico:
+          title: correoElectronico
+          type: string
+        avatar:
+          title: avatar
+          type: string
+        perfiles:
+          items:
+            $ref: '#/components/schemas/PerfilUsuario'
+          title: perfiles
+          type: array
+      title: Usuario
+      type: object
+    PerfilUsuario:
+      example:
+        avatarPerfil: avatarPerfil
+        id: 6
+        nombrePerfil: nombrePerfil
+      properties:
+        id:
+          title: id
+          type: integer
+        nombrePerfil:
+          title: nombrePerfil
+          type: string
+        avatarPerfil:
+          title: avatarPerfil
+          type: string
+      title: PerfilUsuario
+      type: object
+    Login:
+      example:
+        correoElectronico: correoElectronico
+        contraseña: contraseña
+      properties:
+        correoElectronico:
+          title: correoElectronico
+          type: string
+        contraseña:
+          title: contraseña
+          type: string
+      title: Login
+      type: object
+    MetodoPago:
+      example:
+        cvv: cvv
+        tipoTarjeta: Visa
+        fechaExpiracion: 2000-01-23
+        id: 0
+        numeroTarjeta: numeroTarjeta
+      properties:
+        id:
+          title: id
+          type: integer
+        tipoTarjeta:
+          enum:
+          - Visa
+          - MasterCard
+          - American Express
+          title: tipoTarjeta
+          type: string
+        numeroTarjeta:
+          title: numeroTarjeta
+          type: string
+        fechaExpiracion:
+          format: date
+          title: fechaExpiracion
+          type: string
+        cvv:
+          title: cvv
+          type: string
+      title: MetodoPago
+      type: object

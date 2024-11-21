@@ -1,0 +1,237 @@
+openapi: 3.0.0
+info:
+  title: Cineverse Usuarios API
+  description: Microservicio para la gestión de usuarios, multicuentas y métodos de pago en Cineverse
+  version: 1.1.0
+servers:
+  - url: http://localhost:8080/api
+
+paths:
+  /usuarios:
+    post:
+      summary: Registro de nuevo usuario
+      description: Permite registrar un nuevo usuario principal en la plataforma Cineverse. Este usuario puede crear perfiles adicionales (multicuentas) y gestionar métodos de pago.
+      operationId: registrarUsuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioRegistro'
+      responses:
+        '201':
+          description: Usuario registrado exitosamente
+        '400':
+          description: Datos inválidos
+    put:
+      summary: Modificación de datos del usuario principal
+      description: Modifica los datos personales del usuario principal, como correo electrónico, avatar o contraseña.
+      operationId: modificarUsuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Usuario'
+      responses:
+        '200':
+          description: Usuario actualizado correctamente
+        '404':
+          description: Usuario no encontrado
+
+    delete:
+      summary: Eliminar usuario principal
+      description: Elimina la cuenta del usuario principal y todos sus perfiles asociados.
+      operationId: eliminarUsuario
+      responses:
+        '200':
+          description: Usuario eliminado correctamente
+        '404':
+          description: Usuario no encontrado
+
+  /usuarios/login:
+    post:
+      summary: Autenticación de usuario
+      description: Autentica a un usuario usando su correo electrónico y contraseña.
+      operationId: loginUsuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      responses:
+        '200':
+          description: Autenticación exitosa
+        '401':
+          description: Credenciales incorrectas
+
+  /usuarios/{id}:
+    get:
+      summary: Obtener datos del usuario principal
+      description: Obtiene la información del usuario principal, incluyendo su lista de perfiles de multicuentas.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Datos del usuario obtenidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        '404':
+          description: Usuario no encontrado
+
+  /usuarios/{id}/perfiles:
+    post:
+      summary: Crear un nuevo perfil de usuario (multicuentas)
+      description: Permite al usuario principal crear múltiples perfiles bajo la misma cuenta para diferentes personas.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+      operationId: crearPerfil
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerfilUsuario'
+      responses:
+        '201':
+          description: Perfil creado exitosamente
+        '400':
+          description: Datos inválidos
+    put:
+      summary: Cambiar de perfil
+      description: Cambia entre perfiles de usuario disponibles bajo la cuenta principal.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+      operationId: cambiarPerfil
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PerfilUsuario'
+      responses:
+        '200':
+          description: Cambio de perfil exitoso
+        '404':
+          description: Perfil no encontrado
+
+    delete:
+      summary: Eliminar perfil
+      description: Elimina uno de los perfiles asociados a la cuenta principal del usuario.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+      operationId: eliminarPerfil
+      responses:
+        '200':
+          description: Perfil eliminado correctamente
+        '404':
+          description: Perfil no encontrado
+
+  /usuarios/{id}/metodos-pago:
+    post:
+      summary: Añadir método de pago
+      description: Permite añadir un nuevo método de pago a la cuenta del usuario.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID del usuario
+          schema:
+            type: integer
+      operationId: agregarMetodoPago
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetodoPago'
+      responses:
+        '201':
+          description: Método de pago añadido correctamente
+        '400':
+          description: Datos inválidos
+
+components:
+  schemas:
+    UsuarioRegistro:
+      type: object
+      properties:
+        nombreUsuario:
+          type: string
+        correoElectronico:
+          type: string
+        contraseña:
+          type: string
+
+    Usuario:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombreUsuario:
+          type: string
+        correoElectronico:
+          type: string
+        avatar:
+          type: string
+        perfiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/PerfilUsuario'
+
+    PerfilUsuario:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombrePerfil:
+          type: string
+        avatarPerfil:
+          type: string
+
+    Login:
+      type: object
+      properties:
+        correoElectronico:
+          type: string
+        contraseña:
+          type: string
+
+    MetodoPago:
+      type: object
+      properties:
+        id:
+          type: integer
+        tipoTarjeta:
+          type: string
+          enum: [Visa, MasterCard, American Express]
+        numeroTarjeta:
+          type: string
+        fechaExpiracion:
+          type: string
+          format: date
+        cvv:
+          type: string
