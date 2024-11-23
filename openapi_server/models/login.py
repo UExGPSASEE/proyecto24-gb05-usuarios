@@ -12,7 +12,7 @@ class Login(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, correo_electronico=None, contrasea=None):  # noqa: E501
+    def __init__(self, correo_electronico=None, contrasena=None):  # noqa: E501
         """Login - a model defined in OpenAPI
 
         :param correo_electronico: The correo_electronico of this Login.  # noqa: E501
@@ -22,16 +22,16 @@ class Login(Model):
         """
         self.openapi_types = {
             'correo_electronico': str,
-            'contrasea': str
+            'contrasena': str
         }
 
         self.attribute_map = {
             'correo_electronico': 'correoElectronico',
-            'contrasea': 'contraseña'
+            'contrasena': 'contrasena'
         }
 
         self._correo_electronico = correo_electronico
-        self._contrasea = contrasea
+        self._contrasena = contrasena
 
     @classmethod
     def from_dict(cls, dikt) -> 'Login':
@@ -66,17 +66,17 @@ class Login(Model):
         self._correo_electronico = correo_electronico
 
     @property
-    def contrasea(self) -> str:
+    def contrasena(self) -> str:
         """Gets the contrasea of this Login.
 
 
         :return: The contrasea of this Login.
         :rtype: str
         """
-        return self._contrasea
+        return self.contrasena
 
-    @contrasea.setter
-    def contrasea(self, contrasea: str):
+    @contrasena.setter
+    def contrasena(self, contrasena: str):
         """Sets the contrasea of this Login.
 
 
@@ -84,4 +84,4 @@ class Login(Model):
         :type contrasea: str
         """
 
-        self._contrasea = contrasea
+        self.contrasena = contrasena
