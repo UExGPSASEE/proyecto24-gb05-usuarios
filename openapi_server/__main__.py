@@ -1,5 +1,6 @@
-import connexion
+#!/usr/bin/env python3
 
+import connexion
 
 from openapi_server import encoder
 
