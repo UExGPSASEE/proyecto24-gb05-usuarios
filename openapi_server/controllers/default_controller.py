@@ -107,6 +107,41 @@ def agregar_metodo_pago():
     finally:
         db.close()
 
+def modificar_usuario():
+    """Modificación de datos del usuario principal."""
+    db = SessionLocal()
+    try:
+        if usuario_logeado is None:
+            return Response('Usuario no autenticado', status=401, content_type='text/plain; charset=utf-8')
+
+        if not connexion.request.is_json:
+            return Response('El contenido de la solicitud no es JSON', status=400, content_type='text/plain; charset=utf-8')
+
+        usuario_data = connexion.request.get_json()
+
+        # Validación de campos requeridos
+        if not any(key in usuario_data for key in ['nombreUsuario', 'apellido', 'correoElectronico', 'contrasena']):
+            return Response('Faltan datos para actualizar el usuario', status=400, content_type='text/plain; charset=utf-8')
+
+        actualizado = CRUD_usuarios.actualizar_usuario(
+            db,
+            usuario_logeado,
+            usuario_data.get('nombreUsuario'),
+            usuario_data.get('apellido'),
+            usuario_data.get('correoElectronico'),
+            usuario_data.get('contrasena')
+        )
+
+        if actualizado:
+            return Response('Usuario modificado correctamente', status=200, content_type='text/plain; charset=utf-8')
+        else:
+            return Response('Usuario no encontrado', status=404, content_type='text/plain; charset=utf-8')
+    except Exception as e:
+        print(f"Error al modificar el usuario: {e}")
+        return Response('Error al modificar el usuario', status=500, content_type='text/plain; charset=utf-8')
+    finally:
+        db.close()
+
 def eliminar_usuario():
     """Eliminar el usuario autenticado."""
     db = SessionLocal()
