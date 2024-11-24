@@ -165,3 +165,44 @@ def eliminar_usuario():
         return Response('Error al eliminar el usuario', status=500, content_type='text/plain; charset=utf-8')
     finally:
         db.close()
+
+def crear_perfil():
+    """Crear un nuevo perfil de usuario (multicuentas)."""
+    db = SessionLocal()
+    global perfil_actual
+    try:
+        # Verificar si el contenido de la solicitud es JSON
+        if not connexion.request.is_json:
+            return Response('El contenido de la solicitud no es JSON', status=400,
+                            content_type='text/plain; charset=utf-8')
+
+        # Obtener datos del perfil desde la solicitud
+        perfil_data = connexion.request.get_json()
+        nombre_perfil = perfil_data.get('nombrePerfil')
+
+        # Validar que el nombre del perfil está presente
+        if not nombre_perfil:
+            return Response('El nombre del perfil es obligatorio', status=400,
+                            content_type='text/plain; charset=utf-8')
+
+        # Crear el perfil en la base de datos
+        CRUD_perfiles.agregar_perfil_usuario(db, usuario_logeado, nombre_perfil)
+
+        # Si no hay un perfil actual, configurarlo como el creado
+        if perfil_actual is None:
+            perfil_actual = CRUD_perfiles.obtener_id_perfil_por_nombre(
+                db, usuario_logeado, nombre_perfil
+            )
+
+        # Respuesta exitosa
+        return Response('Perfil creado correctamente', status=201, content_type='text/plain; charset=utf-8')
+
+    except IntegrityError:
+        db.rollback()
+        return Response('El perfil ya existe', status=409, content_type='text/plain; charset=utf-8')
+    except Exception as e:
+        print(f"Error al crear el perfil: {e}")
+        db.rollback()
+        return Response('Error al crear el perfil', status=500, content_type='text/plain; charset=utf-8')
+    finally:
+        db.close()
