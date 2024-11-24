@@ -208,6 +208,64 @@ def crear_perfil():
         db.close()
 
 
+def cambiar_perfil():
+    """Cambiar de perfil basado en el nombre del perfil."""
+    db = SessionLocal()
+    global perfil_actual
+    try:
+        # Validar que se haya proporcionado el nombre del perfil como parámetro
+        nombre_perfil = connexion.request.args.get('nombrePerfil')
+        if not nombre_perfil:
+            return Response('El nombre del perfil es requerido', status=400, content_type='text/plain; charset=utf-8')
+
+        # Obtener el ID del perfil por nombre
+        perfil = CRUD_perfiles.obtener_id_perfil_por_nombre(
+            db, usuario_logeado, nombre_perfil
+        )
+
+        if perfil is not None:
+            perfil_actual = perfil
+            return Response('Perfil cambiado correctamente', status=200, content_type='text/plain; charset=utf-8')
+        else:
+            return Response('Perfil no encontrado', status=404, content_type='text/plain; charset=utf-8')
+    except Exception as e:
+        print(f"Error al cambiar de perfil: {e}")
+        return Response('Error al cambiar de perfil', status=500, content_type='text/plain; charset=utf-8')
+    finally:
+        db.close()
+
+from flask import Response
+
+def añadir_favorito():
+    """Añadir contenido a favoritos."""
+    db = SessionLocal()
+    try:
+        if not connexion.request.is_json:
+            return Response('El contenido de la solicitud no es JSON', status=400, content_type='text/plain; charset=utf-8')
+
+        favorito_data = connexion.request.get_json()
+
+        # Verificar si hay un perfil seleccionado
+        if perfil_actual is None:
+            return Response('Perfil no seleccionado, no se puede agregar el contenido', status=400, content_type='text/plain; charset=utf-8')
+
+        # Verificar si falta el ID del contenido
+        if 'peliculaId' not in favorito_data:
+            return Response('El ID del contenido es requerido', status=400, content_type='text/plain; charset=utf-8')
+
+        # Añadir favorito si todo está correcto
+        CRUD_Favoritos.añadir_favorito_usuario(db, usuario_logeado, perfil_actual, favorito_data['peliculaId'])
+        return Response('Contenido añadido a favoritos correctamente', status=201, content_type='text/plain; charset=utf-8')
+
+    except Exception as e:
+        print(f"Error al añadir el contenido a favoritos: {e}")
+        db.rollback()
+        return Response('Error al añadir el contenido a favoritos', status=500, content_type='text/plain; charset=utf-8')
+
+    finally:
+        db.close()
+
+
 def obtener_favoritos():
     """Obtener lista de favoritos del perfil actual."""
     db = SessionLocal()
