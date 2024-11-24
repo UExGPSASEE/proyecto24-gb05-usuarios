@@ -206,3 +206,34 @@ def crear_perfil():
         return Response('Error al crear el perfil', status=500, content_type='text/plain; charset=utf-8')
     finally:
         db.close()
+
+from flask import Response
+
+def añadir_favorito():
+    """Añadir contenido a favoritos."""
+    db = SessionLocal()
+    try:
+        if not connexion.request.is_json:
+            return Response('El contenido de la solicitud no es JSON', status=400, content_type='text/plain; charset=utf-8')
+
+        favorito_data = connexion.request.get_json()
+
+        # Verificar si hay un perfil seleccionado
+        if perfil_actual is None:
+            return Response('Perfil no seleccionado, no se puede agregar el contenido', status=400, content_type='text/plain; charset=utf-8')
+
+        # Verificar si falta el ID del contenido
+        if 'peliculaId' not in favorito_data:
+            return Response('El ID del contenido es requerido', status=400, content_type='text/plain; charset=utf-8')
+
+        # Añadir favorito si todo está correcto
+        CRUD_Favoritos.añadir_favorito_usuario(db, usuario_logeado, perfil_actual, favorito_data['peliculaId'])
+        return Response('Contenido añadido a favoritos correctamente', status=201, content_type='text/plain; charset=utf-8')
+
+    except Exception as e:
+        print(f"Error al añadir el contenido a favoritos: {e}")
+        db.rollback()
+        return Response('Error al añadir el contenido a favoritos', status=500, content_type='text/plain; charset=utf-8')
+
+    finally:
+        db.close()
