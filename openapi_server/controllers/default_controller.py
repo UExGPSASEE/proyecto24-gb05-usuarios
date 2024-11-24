@@ -206,3 +206,30 @@ def crear_perfil():
         return Response('Error al crear el perfil', status=500, content_type='text/plain; charset=utf-8')
     finally:
         db.close()
+
+
+def obtener_favoritos():
+    """Obtener lista de favoritos del perfil actual."""
+    db = SessionLocal()
+    try:
+        if perfil_actual is None:
+            return Response('No hay un perfil seleccionado', status=400, content_type='text/plain; charset=utf-8')
+
+        favoritos = CRUD_Favoritos.obtener_favoritos_usuario(db, usuario_logeado, perfil_actual)
+        if favoritos:
+            favoritos_list = [
+                {
+                    'id': favorito.id,
+                    'idUsuario': favorito.idusuario,
+                    'idPerfil': favorito.idperfil,
+                    'idPelicula': favorito.idpelicula
+                } for favorito in favoritos
+            ]
+            return jsonify(favoritos_list), 200
+        else:
+            return Response('Favoritos no encontrados', status=404, content_type='text/plain; charset=utf-8')
+    except Exception as e:
+        print(f"Error al obtener los favoritos: {e}")
+        return Response('Error al obtener los favoritos', status=500, content_type='text/plain; charset=utf-8')
+    finally:
+        db.close()
