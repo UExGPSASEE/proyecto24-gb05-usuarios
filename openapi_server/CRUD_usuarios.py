@@ -42,3 +42,12 @@ def actualizar_usuario(db: Session, usuario_id: int, nombre: str = None, apellid
         db.commit()
         return True
     return False
+
+# Eliminar un usuario
+def eliminar_usuario(db: Session, usuario_id: int) -> bool:
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if usuario:
+        db.delete(usuario)
+        db.commit()
+        return True
+    return False
