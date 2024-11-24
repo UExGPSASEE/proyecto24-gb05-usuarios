@@ -26,3 +26,19 @@ def login_usuario(db: Session, email: str, contrasena: str):
 def obtener_id_usuario(db: Session, email: str) -> int:
     usuario = db.query(Usuario).filter(Usuario.email == email).first()
     return usuario.id
+
+# Actualizar un usuario
+def actualizar_usuario(db: Session, usuario_id: int, nombre: str = None, apellido: str = None, email: str = None, contrasena: str = None):
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if usuario:
+        if nombre:
+            usuario.nombre = nombre
+        if apellido:
+            usuario.apellido = apellido
+        if email:
+            usuario.email = email
+        if contrasena:
+            usuario.contrasena = contrasena
+        db.commit()
+        return True
+    return False
