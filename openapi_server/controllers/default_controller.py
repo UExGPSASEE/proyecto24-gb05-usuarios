@@ -206,3 +206,30 @@ def crear_perfil():
         return Response('Error al crear el perfil', status=500, content_type='text/plain; charset=utf-8')
     finally:
         db.close()
+
+
+def cambiar_perfil():
+    """Cambiar de perfil basado en el nombre del perfil."""
+    db = SessionLocal()
+    global perfil_actual
+    try:
+        # Validar que se haya proporcionado el nombre del perfil como parámetro
+        nombre_perfil = connexion.request.args.get('nombrePerfil')
+        if not nombre_perfil:
+            return Response('El nombre del perfil es requerido', status=400, content_type='text/plain; charset=utf-8')
+
+        # Obtener el ID del perfil por nombre
+        perfil = CRUD_perfiles.obtener_id_perfil_por_nombre(
+            db, usuario_logeado, nombre_perfil
+        )
+
+        if perfil is not None:
+            perfil_actual = perfil
+            return Response('Perfil cambiado correctamente', status=200, content_type='text/plain; charset=utf-8')
+        else:
+            return Response('Perfil no encontrado', status=404, content_type='text/plain; charset=utf-8')
+    except Exception as e:
+        print(f"Error al cambiar de perfil: {e}")
+        return Response('Error al cambiar de perfil', status=500, content_type='text/plain; charset=utf-8')
+    finally:
+        db.close()
