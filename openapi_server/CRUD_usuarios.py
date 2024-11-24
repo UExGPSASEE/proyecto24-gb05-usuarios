@@ -26,3 +26,13 @@ def login_usuario(db: Session, email: str, contrasena: str):
 def obtener_id_usuario(db: Session, email: str) -> int:
     usuario = db.query(Usuario).filter(Usuario.email == email).first()
     return usuario.id
+
+
+# Eliminar un usuario
+def eliminar_usuario(db: Session, usuario_id: int) -> bool:
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if usuario:
+        db.delete(usuario)
+        db.commit()
+        return True
+    return False

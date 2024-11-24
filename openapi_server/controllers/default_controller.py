@@ -106,3 +106,27 @@ def agregar_metodo_pago():
         return 'Error al añadir el método de pago', 500
     finally:
         db.close()
+
+def eliminar_usuario():
+    """Eliminar el usuario autenticado."""
+    db = SessionLocal()
+    global usuario_logeado
+    try:
+        # Validar si el usuario está autenticado
+        if usuario_logeado is None:
+            return Response('Usuario no autenticado', status=401, content_type='text/plain; charset=utf-8')
+
+        # Intentar eliminar al usuario
+        eliminado = CRUD_usuarios.eliminar_usuario(db, usuario_logeado)
+
+        if eliminado:
+            usuario_logeado = None  # Reiniciar la sesión global
+            return Response('Usuario eliminado correctamente', status=200, content_type='text/plain; charset=utf-8')
+        else:
+            return Response('Usuario no encontrado', status=404, content_type='text/plain; charset=utf-8')
+
+    except Exception as e:
+        print(f"Error al eliminar el usuario: {e}")
+        return Response('Error al eliminar el usuario', status=500, content_type='text/plain; charset=utf-8')
+    finally:
+        db.close()
