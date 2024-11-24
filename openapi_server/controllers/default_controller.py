@@ -83,3 +83,26 @@ def registrar_usuario():
         return Response('Error al registrar el usuario', status=500, content_type='text/plain; charset=utf-8')
     finally:
         db.close()
+def agregar_metodo_pago():
+    """Añadir método de pago al usuario autenticado."""
+    db = SessionLocal()
+    try:
+        if not connexion.request.is_json:
+            return 'El contenido de la solicitud no es JSON', 400
+
+        metodo_pago_data = connexion.request.get_json()
+        CRUD_metodosPago.agregar_metodo_pago(
+            db,
+            usuario_logeado,
+            metodo_pago_data['tipoTarjeta'],
+            metodo_pago_data['numeroTarjeta'],
+            metodo_pago_data['fechaExpiracion'],
+            metodo_pago_data['cvv']
+        )
+        return 'Método de pago añadido correctamente', 201
+    except Exception as e:
+        print(f"Error al añadir el método de pago: {e}")
+        db.rollback()
+        return 'Error al añadir el método de pago', 500
+    finally:
+        db.close()
